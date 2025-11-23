@@ -1,12 +1,14 @@
 import os
 import mysql.connector
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from dotenv import load_dotenv
 from typing import List, Optional
+import shutil
+import pypdf
 
 # Optional Groq SDK import
 try:
@@ -40,10 +42,13 @@ app.add_middleware(
 
 # Serve frontend files
 app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/uploads", StaticFiles(directory="upload file"), name="uploads")
 
 class ChatRequest(BaseModel):
     user_id: int
     message: str
+    file_path: Optional[str] = None
+    media_type: Optional[str] = None
 
 def get_db_connection():
     try:
@@ -89,7 +94,7 @@ def get_or_create_session(user_id: int):
         cursor.close()
         conn.close()
 
-def save_message(session_id: int, sender: str, message: str):
+def save_message(session_id: int, sender: str, message: str, file_path: Optional[str] = None, media_type: Optional[str] = None):
     conn = get_db_connection()
     if not conn:
         return
@@ -97,8 +102,8 @@ def save_message(session_id: int, sender: str, message: str):
     cursor = conn.cursor()
     try:
         cursor.execute(
-            "INSERT INTO Chat_History (session_id, sender, message) VALUES (%s, %s, %s)",
-            (session_id, sender, message)
+            "INSERT INTO Chat_History (session_id, sender, message, file_path, media_type) VALUES (%s, %s, %s, %s, %s)",
+            (session_id, sender, message, file_path, media_type)
         )
         conn.commit()
     except mysql.connector.Error as err:
@@ -130,7 +135,7 @@ async def get_history(user_id: int):
         session_id = session['session_id']
         
         cursor.execute(
-            "SELECT sender, message, message_time FROM Chat_History WHERE session_id = %s ORDER BY message_time ASC",
+            "SELECT sender, message, file_path, media_type, message_time FROM Chat_History WHERE session_id = %s ORDER BY message_time ASC",
             (session_id,)
         )
         history = cursor.fetchall()
@@ -141,17 +146,30 @@ async def get_history(user_id: int):
         cursor.close()
         conn.close()
 
+@app.post("/upload")
+async def upload_file(file: UploadFile = File(...)):
+    upload_dir = "upload file"
+    os.makedirs(upload_dir, exist_ok=True)
+    file_path = os.path.join(upload_dir, file.filename)
+    
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+        
+    return {"file_path": file_path, "media_type": file.content_type}
+
 @app.post("/chat")
 async def chat_endpoint(req: ChatRequest):
     user_id = req.user_id
     user_message = req.message
+    file_path = req.file_path
+    media_type = req.media_type
     
     session_id = get_or_create_session(user_id)
     if not session_id:
         return {"reply": "❌ Database error: Could not create/retrieve session."}
 
     # Save user message
-    save_message(session_id, 'user', user_message)
+    save_message(session_id, 'user', user_message, file_path, media_type)
 
     # ---- GROQ API ----
     reply = ""
@@ -163,9 +181,63 @@ async def chat_endpoint(req: ChatRequest):
         else:
             try:
                 client = Groq(api_key=GROQ_API_KEY)
+                messages = [{"role": "user", "content": user_message}]
+                
+                # Handle Multimodal Inputs
+                current_model = GROQ_MODEL
+                
+                if file_path and os.path.exists(file_path):
+                    if media_type and "image" in media_type:
+                        # Image Processing
+                        import base64
+                        with open(file_path, "rb") as image_file:
+                            encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
+                        
+                        messages[0]["content"] = [
+                            {"type": "text", "text": user_message},
+                            {
+                                "type": "image_url",
+                                "image_url": {
+                                    "url": f"data:{media_type};base64,{encoded_string}"
+                                }
+                            }
+                        ]
+                        # Force vision model for images
+                        current_model = "meta-llama/llama-4-scout-17b-16e-instruct"
+                        
+                    elif media_type and "pdf" in media_type:
+                        # PDF Processing
+                        try:
+                            reader = pypdf.PdfReader(file_path)
+                            pdf_text = ""
+                            for page in reader.pages:
+                                pdf_text += page.extract_text() + "\n"
+                            
+                            messages[0]["content"] = f"{user_message}\n\n[Attached PDF Content]:\n{pdf_text}"
+                        except Exception as e:
+                            print(f"PDF Error: {e}")
+                            messages[0]["content"] = f"{user_message}\n\n[System]: Failed to read PDF content."
+
+                    elif media_type and "audio" in media_type:
+                        # Audio Processing (Whisper)
+                        try:
+                            with open(file_path, "rb") as file:
+                                transcription = client.audio.transcriptions.create(
+                                    file=(os.path.basename(file_path), file.read()),
+                                    model="distil-whisper-large-v3-en",
+                                    response_format="json",
+                                    language="en",
+                                    temperature=0.0
+                                )
+                                transcribed_text = transcription.text
+                                messages[0]["content"] = f"{user_message}\n\n[Audio Transcription]:\n{transcribed_text}"
+                        except Exception as e:
+                            print(f"Audio Error: {e}")
+                            messages[0]["content"] = f"{user_message}\n\n[System]: Failed to transcribe audio."
+
                 completion = client.chat.completions.create(
-                    messages=[{"role": "user", "content": user_message}],
-                    model=GROQ_MODEL,
+                    messages=messages,
+                    model=current_model,
                 )
                 reply = completion.choices[0].message.content
             except Exception as e:

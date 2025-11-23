@@ -56,6 +56,7 @@ body {
 .chat::-webkit-scrollbar {
   width: 6px;
 }
+
 .chat::-webkit-scrollbar-thumb {
   background: #00e0ff;
   border-radius: 3px;
@@ -133,8 +134,58 @@ button:hover {
     opacity: 0;
     transform: translateY(5px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* Attach Button */
+.attach-btn {
+  background: transparent;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0 10px;
+  transition: transform 0.2s;
+}
+
+.attach-btn:hover {
+  transform: scale(1.1);
+  background: transparent;
+  box-shadow: none;
+}
+
+/* File Preview */
+.file-preview {
+  padding: 5px 10px;
+  font-size: 0.9rem;
+  color: #00e0ff;
+  display: none;
+}
+
+/* Chat Image/File Styling */
+.chat-image {
+  max-width: 100%;
+  border-radius: 10px;
+  margin-top: 5px;
+  display: block;
+}
+
+.chat-file {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 5px 10px;
+  border-radius: 5px;
+  margin-top: 5px;
+  text-decoration: none;
+  color: #00e0ff;
+  font-size: 0.9rem;
+}
+
+.chat-file:hover {
+  text-decoration: underline;
 }

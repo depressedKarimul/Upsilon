@@ -1,34 +1,38 @@
-# AI Chatbot with MySQL Integration
+# SkillPro Multimodal AI Assistant
 
-A full-stack AI chatbot application built with FastAPI, MySQL, and the Groq API. This application features a modern, responsive UI and persists chat history per user.
+A powerful, full-stack AI chatbot application built with **FastAPI**, **MySQL**, and the **Groq API**. This assistant supports **Text**, **Images**, **Audio**, and **PDF** inputs, providing intelligent, context-aware responses.
 
-## Features
+## 🚀 Features
 
-- **AI-Powered Conversations**: Utilizes the Groq API (Llama 3 models) for intelligent responses.
-- **Persistent History**: Stores chat sessions and messages in a MySQL database.
+- **Multimodal Capabilities**:
+  - **Text**: Intelligent conversations using Llama 3 models.
+  - **Images**: Visual analysis and descriptions using `meta-llama/llama-4-scout-17b-16e-instruct`.
+  - **Audio**: Speech-to-text transcription using Whisper models.
+  - **PDF**: Content extraction and context-aware Q&A.
+- **Persistent History**: Stores chat sessions, messages, and file attachments in a MySQL database.
 - **User Sessions**: Automatically manages chat sessions for different users.
-- **Modern UI**: Clean, responsive interface with glassmorphism design elements.
+- **Modern UI**: Clean, responsive interface with glassmorphism design elements, file previews, and attachment support.
 - **FastAPI Backend**: High-performance, asynchronous Python backend.
 
-## Tech Stack
+## 🛠️ Tech Stack
 
-- **Backend**: Python, FastAPI
+- **Backend**: Python, FastAPI, Uvicorn
 - **Database**: MySQL
-- **Frontend**: HTML, CSS, JavaScript
-- **AI Provider**: Groq API
+- **Frontend**: HTML5, CSS3, Vanilla JavaScript
+- **AI Provider**: Groq API (Llama 3/4, Whisper)
 
-## Prerequisites
+## 📋 Prerequisites
 
 - Python 3.8+
 - MySQL Server
 - Groq API Key
 
-## Installation
+## ⚙️ Installation
 
 1. **Clone the repository**
    ```bash
-   git clone <repository-url>
-   cd <repository-directory>
+   git clone https://github.com/depressedKarimul/Upsilon.git
+   cd Upsilon
    ```
 
 2. **Install dependencies**
@@ -50,12 +54,14 @@ A full-stack AI chatbot application built with FastAPI, MySQL, and the Groq API.
    );
 
    CREATE TABLE IF NOT EXISTS Chat_History (
-       id INT AUTO_INCREMENT PRIMARY KEY,
+       chat_id INT AUTO_INCREMENT PRIMARY KEY,
        session_id INT NOT NULL,
        sender ENUM('user', 'chatbot') NOT NULL,
        message TEXT NOT NULL,
+       file_path VARCHAR(255) DEFAULT NULL,
+       media_type VARCHAR(50) DEFAULT NULL,
        message_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-       FOREIGN KEY (session_id) REFERENCES Chat_Session(session_id)
+       FOREIGN KEY (session_id) REFERENCES Chat_Session(session_id) ON DELETE CASCADE
    );
    ```
 
@@ -73,7 +79,7 @@ A full-stack AI chatbot application built with FastAPI, MySQL, and the Groq API.
    DB_NAME=skillprodb
    ```
 
-## Usage
+## 🏃‍♂️ Usage
 
 1. **Start the server**
    ```bash
@@ -83,8 +89,16 @@ A full-stack AI chatbot application built with FastAPI, MySQL, and the Groq API.
 2. **Access the application**
    Open your browser and navigate to `http://localhost:8000`.
 
-## API Endpoints
+## 📡 API Endpoints
 
 - `GET /`: Serves the chatbot interface.
 - `GET /history/{user_id}`: Retrieves chat history for a specific user.
-- `POST /chat`: Sends a message to the chatbot and receives a reply.
+- `POST /chat`: Sends a message (text + attachments) to the chatbot.
+- `POST /upload`: Handles file uploads.
+
+## 🧪 Testing
+
+Run the automated test script to verify backend functionality:
+```bash
+python test_api.py
+```

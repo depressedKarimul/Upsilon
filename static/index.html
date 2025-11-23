@@ -1,29 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Chatbot — SkillPro</title>
-    <link rel="stylesheet" href="static/styles.css" />
-  </head>
-  <body>
-    <main class="container">
-      <h1>SkillPro Chatbot</h1>
-      <div id="chat" class="chat"></div>
-      <form id="chat-form">
-        <input
-          id="message"
-          type="text"
-          placeholder="Say something..."
-          autocomplete="off"
-          required
-        />
-        <button type="submit">Send</button>
-      </form>
-    </main>
-    <script src="static/script.js"></script>
 
-   
-  </body>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Chatbot — SkillPro</title>
+  <link rel="stylesheet" href="static/styles.css" />
+</head>
+
+<body>
+  <main class="container">
+    <h1>SkillPro Chatbot</h1>
+    <div id="chat" class="chat"></div>
+    <div id="file-preview" class="file-preview"></div>
+    <form id="chat-form">
+      <input type="file" id="file-input" hidden />
+      <button type="button" id="attach-btn" class="attach-btn">📎</button>
+      <input id="message" type="text" placeholder="Say something..." autocomplete="off" required />
+      <button type="submit">Send</button>
+    </form>
+  </main>
+  <script src="static/script.js"></script>
+
+
+</body>
+
 </html>
-
