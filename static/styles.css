@@ -1,0 +1,140 @@
+/* General Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Poppins", sans-serif;
+}
+
+/* Body Styling */
+body {
+  background: radial-gradient(circle at top left, #1a1a1d, #0f0f10);
+  color: #fff;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Main Container */
+.container {
+  width: 90%;
+  max-width: 600px;
+  background: rgba(25, 25, 30, 0.9);
+  border-radius: 20px;
+  box-shadow: 0 0 25px rgba(0, 255, 255, 0.1);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  height: 80vh;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Header */
+.container h1 {
+  text-align: center;
+  font-size: 1.8rem;
+  margin-bottom: 20px;
+  color: #00e0ff;
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+}
+
+/* Chat Area */
+.chat {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-right: 5px;
+  scrollbar-width: thin;
+  scrollbar-color: #00e0ff transparent;
+}
+
+/* Scrollbar for Chrome */
+.chat::-webkit-scrollbar {
+  width: 6px;
+}
+.chat::-webkit-scrollbar-thumb {
+  background: #00e0ff;
+  border-radius: 3px;
+}
+
+/* Message Bubbles */
+.message {
+  padding: 12px 16px;
+  border-radius: 18px;
+  max-width: 80%;
+  line-height: 1.5;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+/* User Message */
+.message.user {
+  background: linear-gradient(135deg, #0078ff, #00e0ff);
+  align-self: flex-end;
+  border-bottom-right-radius: 5px;
+  box-shadow: 0 0 10px rgba(0, 224, 255, 0.3);
+}
+
+/* Bot Message */
+.message.bot {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  align-self: flex-start;
+  border-bottom-left-radius: 5px;
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.05);
+}
+
+/* Chat Input Form */
+#chat-form {
+  display: flex;
+  align-items: center;
+  margin-top: 10px;
+  background: rgba(255, 255, 255, 0.07);
+  border-radius: 30px;
+  padding: 5px 10px;
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.1);
+}
+
+/* Input Field */
+#message {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 1rem;
+  padding: 10px 12px;
+  outline: none;
+}
+
+/* Send Button */
+button {
+  background: linear-gradient(135deg, #00e0ff, #0078ff);
+  border: none;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 25px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+button:hover {
+  background: linear-gradient(135deg, #00c0ff, #005aff);
+  box-shadow: 0 0 10px rgba(0, 224, 255, 0.4);
+  transform: scale(1.05);
+}
+
+/* Message Animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
